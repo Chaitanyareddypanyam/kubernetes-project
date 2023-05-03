@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: projectdb
+  labels:
+    app: projectdb
+spec:
+  selector:
+    matchLabels:
+      app: projectdb
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: projectdb
+    spec:
+      containers:
+      - name: projectdb
+        image: chaitanya0145/database:v1
+        args:
+          - "ignore-db-dir=lost+found"
+        volumeMounts:
+          - mountPath: /var/lib/mysql
+            name: my-db-data
+        ports:
+          - name: projectdb-prot
+            containerPort: 3306
+        env:
+          - name: MYSQL_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: app-secret
+                key: db-pass
+      nodeSelector:
+        zone: us-east-1a
+      volumes:
+        - name: my-db-data
+          awsElasticBlockStore:
+            volumeID: vol-0044fc76cc4bdde62
+            fsType: ext4
